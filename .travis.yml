@@ -1,0 +1,19 @@
+language: node_js
+node_js: stable
+before_script:
+- bower install --silent
+addons:
+  sauce_connect: true
+script:
+- npm run lint
+- polymer test --plugin sauce --job-name "dom-reorderer:${TRAVIS_BRANCH}" --build-number=${TRAVIS_BUILD_NUMBER}
+cache:
+  directories:
+  - bower_components
+  - node_modules
+branches:
+  only:
+    - stage
+    - develop
+after_success:
+  - node tasks/ci.js
