@@ -1,109 +1,92 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
     <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <!-- Step 1: import the element to test -->
     <link rel="import" href="../dom-reorderer.html">
+    <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
   </head>
   <body>
-
-    <test-fixture id="basic">
+    <test-fixture id="Basic">
       <template>
         <dom-reorderer>
-          <template is="dom-repeat">
-            <div>[[item]]</div>
-          </template>
+          <dom-repeat items='["item1", "item2", "item3"]'>
+            <template>
+              <div>[[item]]</div>
+            </template>
+          </dom-repeat>
         </dom-reorderer>
       </template>
     </test-fixture>
 
     <script>
-    /* global TestHelpers, MockInteractions, sinon, fixture, assert */
+    /* global sinon */
     suite('basic', function() {
-      var element;
-      var listItems;
-      var api;
-      var itemHeight;
-
-      function getChildren(api) {
-        return api.getEffectiveChildNodes().filter(node => node.nodeName === 'DIV');
-      }
+      let element;
+      let listItems;
+      let itemHeight;
 
       setup(function(done) {
-        element = fixture('basic');
-        element.children[0].items = ['one', 'two', 'three', 'four', 'five'];
-        // Without timeout `forceXIfStamp` throws error
-        setTimeout(function() {
-          TestHelpers.forceXIfStamp(element);
-          api = Polymer.dom(element.root);
-          listItems = getChildren(api);
-          var domRect = listItems[0].getBoundingClientRect();
+        element = fixture('Basic');
+        flush(() => {
+          listItems = element.shadowRoot.querySelector('slot')
+            .assignedNodes().filter((node) => node.nodeName === 'DIV');
+          const domRect = listItems[0].getBoundingClientRect();
           itemHeight = domRect.height;
           done();
-        }, 1);
+        });
       });
 
       test('Fires "dom-order-changed" event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('dom-order-changed', spy);
         MockInteractions.track(listItems[0], 0, itemHeight, 10);
         assert.isTrue(spy.called, 'Event is called');
       });
 
-      test('Moved second element to third position', function() {
+      test('Moves second element to third position', function(done) {
         MockInteractions.track(listItems[1], 0, itemHeight, 10);
-        TestHelpers.forceXIfStamp(element);
-        listItems = getChildren(api);
-        assert.equal(listItems[1].textContent, 'three');
-        assert.equal(listItems[2].textContent, 'two');
+        flush(() => {
+          listItems = element.shadowRoot.querySelector('slot')
+            .assignedNodes().filter((node) => node.nodeName === 'DIV');
+          assert.equal(listItems[1].textContent, 'item3');
+          assert.equal(listItems[2].textContent, 'item2');
+          done();
+        });
       });
 
-      test('"dom-order-changed" contains start and end position and the model', function() {
-        var eventData;
+      test('"dom-order-changed" contains start and end position and the model', function(done) {
         element.addEventListener('dom-order-changed', function(e) {
-          eventData = e.detail;
+          let eventData = e.detail;
+          assert.equal(eventData.item, 'item2');
+          assert.equal(eventData.from, 1);
+          assert.equal(eventData.to, 2);
+          done();
         });
-        MockInteractions.track(listItems[2], 0, itemHeight, 10);
-        TestHelpers.forceXIfStamp(element);
-        assert.equal(eventData.item, 'three');
-        assert.equal(eventData.from, 2);
-        assert.equal(eventData.to, 3);
+        MockInteractions.track(listItems[1], 0, itemHeight, 10);
       });
 
-      test('Move item to extreme position forward', function() {
-        var eventData;
+      test('Moves item to extreme position forward', function(done) {
         element.addEventListener('dom-order-changed', function(e) {
-          eventData = e.detail;
+          const eventData = e.detail;
+          assert.equal(eventData.to, listItems.length - 1);
+          done();
         });
-        var dy = (listItems.length - 1) * itemHeight;
+        const dy = (listItems.length - 1) * itemHeight;
         MockInteractions.track(listItems[0], 0, dy, 10);
-        assert.equal(eventData.to, listItems.length - 1);
       });
 
-      test('Move item to extreme position backward', function() {
-        var eventData;
+      test('Moves item to extreme position backward', function(done) {
         element.addEventListener('dom-order-changed', function(e) {
-          eventData = e.detail;
+          const eventData = e.detail;
+          assert.equal(eventData.to, 0);
+          done();
         });
-        var dy = (listItems.length - 1) * itemHeight;
+        const dy = (listItems.length - 1) * itemHeight;
         MockInteractions.track(listItems[listItems.length - 1], 0, -dy, 10);
-        assert.equal(eventData.to, 0);
       });
     });
     </script>
