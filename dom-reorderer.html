@@ -1,6 +1,6 @@
 <!--
 @license
-Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
 the License at
@@ -11,64 +11,10 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
-<link rel="import" href="../polymer/polymer.html">
-<!--
-`<dom-reorderer>` A list of arrangable items.
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../polymer/lib/utils/flattened-nodes-observer.html">
 
-This element is based on https://github.com/PolymerElements/iron-elements/issues/8#issuecomment-163696858
-
-It works with `dom-repeat` custom element. Items in the repeater will become
-draggable and it's position can be changed. After arrangment has changed the
-`dom-order-changed` custom event is fired to notify about the change.
-
-### Example
-```
-<dom-reorderer on-dom-order-changed="_positionChanged">
-  <template is="dom-repeat" items="[[items]]">
-    <div>[[item]]</div>
-  </template>
-</dom-reorderer>
-```
-
-### Styling
-`<dom-reorderer>` provides the following custom properties and mixins for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--dom-reorderer` | Mixin applied to the element | `{}`
-`--dom-reorderer-dragging-item` | Mixin applied to the element that is dragged by the user | `{}`
-`--dom-reorderer-moving-item` | Mixin applied to all elements that are being moved while list order change | `{}`
-`--dom-reorderer-box-shaddow-color` | Color of the shaddow of the dragged item | `rgba(50, 50, 50, 0.75)`
-
-You can also define `.dragging` and `.moving` classes in host application
-to the child elements inside the repeater.
-
-#### Example:
-
-```html
-<style>
-.item {
-  background-color: #fff;
-  padding-right: 12px;
-}
-.item.moving {
-  background-color: yellow;
-}
-.item.dragging {
-  background-color: green;
-}
-</style>
-<dom-reorderer on-dom-order-changed="_positionChanged">
-  <template is="dom-repeat" items="[[items]]">
-    <div class="item">[[item]]</div>
-  </template>
-</dom-reorderer>
-```
-
-@group UI Elements
-@element dom-reorderer
-@demo demo/index.html
--->
 <dom-module id="dom-reorderer">
   <template>
     <style>
@@ -79,7 +25,7 @@ to the child elements inside the repeater.
       @apply --dom-reorderer;
     }
 
-    :host > ::content > * {
+    #slotted::slotted(*) {
       -webkit-user-select: none;
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
       user-select: none;
@@ -87,87 +33,229 @@ to the child elements inside the repeater.
       background-color: inherit;
     }
 
-    :host > ::content > .moving {
+    #slotted::slotted(.moving) {
       position: relative;
       -webkit-transition: -webkit-transform 0.1s ease-in-out;
       transition: transform 0.1s ease-in-out;
       @apply --dom-reorderer-moving-item;
     }
 
-    :host > ::content > .dragging {
+    #slotted::slotted(.dragging) {
       position: relative;
       z-index: 1;
       box-shadow: 2px 2px 9px 0px var(--dom-reorderer-box-shaddow-color, rgba(50, 50, 50, 0.75));
       @apply --dom-reorderer-dragging-item;
     }
     </style>
-    <content></content>
+    <slot id="slotted"></slot>
   </template>
   <script>
-  Polymer({
-    is: 'dom-reorderer',
+  /**
+   * A list of arrangable items.
+   *
+   * This element is based on
+   * https://github.com/PolymerElements/iron-elements/issues/8#issuecomment-163696858
+   *
+   * It only works with `dom-repeat` custom element.
+   * Items in the repeater becomes draggable and it's position can be changed.
+   * After arrangment has changed the `dom-order-changed` custom event is fired to
+   * notify listeners about the change.
+   *
+   * Note: Arrangable items has to be of a type of HTMLElement (nodeType === 1).
+   * It ignores text nodes.
+   *
+   * ### Example
+   *
+   * ```html
+   * <dom-reorderer on-dom-order-changed="_positionChanged">
+   *    <template is="dom-repeat" items="[[items]]">
+   *      <div>[[item]]</div>
+   *    </template>
+   * </dom-reorderer>
+   * ```
+   *
+   * ### Styling
+   *
+   * `<dom-reorderer>` provides the following custom properties and mixins for styling:
+   *
+   * Custom property | Description | Default
+   * ----------------|-------------|----------
+   * `--dom-reorderer` | Mixin applied to the element | `{}`
+   * `--dom-reorderer-dragging-item` | Mixin applied to the element that is dragged by the user | `{}`
+   * `--dom-reorderer-moving-item` | Mixin applied to all elements that are being moved while list order change | `{}`
+   * `--dom-reorderer-box-shaddow-color` | Color of the shaddow of the dragged item | `rgba(50, 50, 50, 0.75)`
+   *
+   * You can also define `.dragging` and `.moving` classes in host application
+   * to the child elements inside the repeater.
+   *
+   * #### Example:
+   *
+   * ```html
+   * <style>
+   *  .item {
+   *    background-color: #fff;
+   *    padding-right: 12px;
+   *  }
+   *  .item.moving {
+   *    background-color: yellow;
+   *  }
+   *  .item.dragging {
+   *    background-color: green;
+   *  }
+   * </style>
+   * <dom-reorderer on-dom-order-changed="_positionChanged">
+   *    <template is="dom-repeat" items="[[items]]">
+   *      <div class="item">[[item]]</div>
+   *    </template>
+   * </dom-reorderer>
+   * ```
+   *
+   * @polymer
+   * @customElement
+   * @memberof UiElements
+   * @demo demo/index.html
+   * @appliesMixin Polymer.GestureEventListeners
+   */
+  class DomReorderer extends Polymer.GestureEventListeners(Polymer.Element) {
+    static get is() {return 'dom-reorderer';}
+    static get properties() {
+      return {
+        /**
+         * Dragged element start top position relative to the parent element.
+         */
+        startScrollTop: {
+          type: Number,
+          readOnly: true
+        },
+        /**
+         * A reference to the element currently being dragged.
+         */
+        dragElement: {
+          type: HTMLElement,
+          readOnly: true
+        },
+        // Model for dragged element.
+        dragModel: {
+          type: Object,
+          readOnly: true
+        },
+        // Index of the item being under the dragged item.
+        overIndex: {
+          type: Number,
+          readOnly: true
+        },
+        // Model of the element being under the dragged item.
+        overModel: {
+          type: Object,
+          readOnly: true
+        }
+      };
+    }
+
+    constructor() {
+      super();
+      this._handleScroll = this._handleScroll.bind(this);
+      this._handleTrack = this._handleTrack.bind(this);
+      this._slotChangeHandler = this._slotChangeHandler.bind(this);
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.addEventListener('scroll', this._handleScroll);
+      this._slotObserver = new Polymer.FlattenedNodesObserver(
+        this.$.slotted, this._slotChangeHandler);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this.removeEventListener('scroll', this._handleScroll);
+      this._slotObserver.disconnect();
+    }
     /**
-     * Dispatched when items order change.
-     *
-     * @event dom-order-changed
-     * @param {Object} item A model of the item that has been moved
-     * @param {Number} from Original index position of the moved item
-     * @param {Number} to New position of the moved item.
+     * A handler for a `slotchange` event to process added or removed nodes.
+     * @param {Object} info Change info record
      */
-    properties: {
-      // Dragged element start top position relative to the parent element.
-      startScrollTop: {
-        type: Number,
-        readOnly: true
-      },
-      // The element currently being dragged.
-      dragElement: {
-        type: HTMLElement,
-        readOnly: true
-      },
-      // Model for dragged element.
-      dragModel: {
-        type: Object,
-        readOnly: true
-      },
-      // Index of the item being under the dragged item.
-      overIndex: {
-        type: Number,
-        readOnly: true
-      },
-      // Model of the element being under the dragged item.
-      overModel: {
-        type: Object,
-        readOnly: true
+    _slotChangeHandler(info) {
+      if (info.target !== this.$.slotted) {
+        return;
       }
-    },
-
-    listeners: {
-      scroll: '_handleScroll',
-      'dom-change': '_trackElements'
-    },
-
-    _handleScroll: function() {
+      if (info.addedNodes.length) {
+        this._processAddedNodes(info.addedNodes);
+      }
+      if (info.removedNodes.length) {
+        this._processRemovedNodes(info.removedNodes);
+      }
+    }
+    /**
+     * Checks id the node is a valid target for dragging support.
+     * @param {Node} node Node to test
+     * @return {Boolean}
+     */
+    _isValidTarget(node) {
+      return node.nodeType === 1;
+    }
+    /**
+     * Checks if a node is `dom-repeat` element.
+     * It accounts for web components spec 0 and 1 specification.
+     *
+     * @param {Node} node Node to test
+     * @return {Boolean}
+     */
+    _isRepeater(node) {
+      return node.is === 'dom-repeat' || node.nodeName === 'DOM-REPEAT';
+    }
+    /**
+     * Handles new nodes added to the light DOM.
+     *
+     * @param {Array<Node>} nodes List of added nodes.
+     */
+    _processAddedNodes(nodes) {
+      for (let i = 0, len = nodes.length; i < len; i++) {
+        const node = nodes[i];
+        if (this._isRepeater(node)) {
+          this.repeater = node;
+          continue;
+        }
+        if (!this._isValidTarget(node)) {
+          continue;
+        }
+        Polymer.Gestures.addListener(node, 'track', this._handleTrack);
+        node.dataset.draggable = true;
+      }
+    }
+    /**
+     * Handles removal of nodes from the light DOM.
+     *
+     * @param {Array<Node>} nodes List of removed nodes.
+     */
+    _processRemovedNodes(nodes) {
+      for (let i = 0, len = nodes.length; i < len; i++) {
+        const node = nodes[i];
+        if (this._isRepeater(node)) {
+          this.repeater = undefined;
+          continue;
+        }
+        if (!this._isValidTarget(node)) {
+          continue;
+        }
+        Polymer.Gestures.removeListener(node, 'track', this._handleTrack);
+        node.dataset.draggable = false;
+      }
+    }
+    /**
+     * Updaters the position of the dragging element when scrolling the element.
+     */
+    _handleScroll() {
       if (this.dragElement) {
         this._updateDragPosition();
       }
-    },
-
-    _trackElements: function(e) {
-      if (!this.repeater && e.target.is === 'dom-repeat') {
-        this.repeater = e.target;
-      }
-      if (e.target === this.repeater) {
-        Polymer.dom(this).children.forEach(function(el) {
-          if (el !== this.repeater && !el.__reorderTracking) {
-            this.listen(el, 'track', '_handleTrack');
-            el.__reorderTracking = true;
-          }
-        }, this);
-      }
-    },
-
-    _handleTrack: function(e) {
+    }
+    /**
+     * Handles track event dispatched by `Polymer.Gestures` library.
+     * This method calls corresponding method to current dragging state.
+     * @param {CustomEvent} e
+     */
+    _handleTrack(e) {
       switch (e.detail.state) {
         case 'start':
           this._onTrackStart(e);
@@ -179,7 +267,7 @@ to the child elements inside the repeater.
           this._onTrackEnd(e);
           break;
       }
-    },
+    }
 
     /**
      * A handler for track stat event.
@@ -187,80 +275,107 @@ to the child elements inside the repeater.
      *
      * @param {Event} e The track event
      */
-    _onTrackStart: function(e) {
+    _onTrackStart(e) {
       // Capture initial state
       this._setStartScrollTop(this.scrollTop);
       this._setDragElement(this._getReorderedItem(e));
       this.dragElement.style.pointerEvents = 'none';
       this.dragElement.classList.add('dragging');
-      this._setDragModel(this.repeater.modelForElement(this.dragElement));
-    },
+      const model = this.repeater ? this.repeater.modelForElement(this.dragElement) : undefined;
+      this._setDragModel(model);
+    }
     /**
-     * Updates the position of dragging element and other elements being under dragged element.
+     * Updates the position of dragging element and other elements being under
+     * dragged element.
      *
      * @param {Event} e The track event
      */
-    _onTrack: function(e) {
+    _onTrack(e) {
       // Re-position dragged item
       this._updateDragPosition(e.detail.dy);
       // Translate non-dragged items up/down
-      var overEl = e.detail.hover();
-      var overModel = overEl && this.repeater.modelForElement(overEl);
+      const overEl = e.detail.hover();
+      const overModel = overEl && this.repeater && this.repeater.modelForElement(overEl);
+      this.dirOffset = e.detail.ddy < 0 ? -1 : 0;
       if (overModel) {
         this._setOverModel(overModel);
-        this.dirOffset = e.detail.ddy < 0 ? -1 : 0;
-        var lastOverIndex = this.overIndex || 0;
-        var overIndex = overModel.index + this.dirOffset;
-        var start = Math.max(overIndex < lastOverIndex ? overIndex : lastOverIndex, 0);
-        var end = overModel.index < lastOverIndex ? lastOverIndex : overModel.index;
-        var children = Polymer.dom(this).children;
-        for (var i = start; i <= end; i++) {
-          var el = children[i];
-          if (el !== this.repeater && i !== this.dragModel.index) {
-            var dir = 0;
-            if (i > this.dragModel.index && i <= overIndex) {
+        const lastOverIndex = this.overIndex || 0;
+        const overIndex = overModel.index + this.dirOffset;
+        const start = Math.max(overIndex < lastOverIndex ? overIndex : lastOverIndex, 0);
+        const end = overModel.index < lastOverIndex ? lastOverIndex : overModel.index;
+        const children = this.shadowRoot.querySelector('slot')
+          .assignedNodes().filter((i) => i.nodeType === 1);
+        const repeater = this.repeater;
+        const draggedIndex = this.dragModel.index;
+        for (let i = start; i <= end; i++) {
+          const el = children[i];
+          if (el === repeater) {
+            continue;
+          }
+          if (i !== draggedIndex) {
+            let dir = 0;
+            if (i > draggedIndex && i <= overIndex) {
               dir = -1;
-            } else if (i > overIndex && i < this.dragModel.index) {
+            } else if (i > overIndex && i < draggedIndex) {
               dir = 1;
             }
             el.classList.add('moving');
-            this.translate3d(0, dir * this.dragElement.offsetHeight + 'px', 0, el);
+            el.style.transform =
+              `translate3d(0,${dir * this.dragElement.offsetHeight}px,0)`;
           }
         }
         this._setOverIndex(overModel.index);
       }
-    },
+    }
 
     /**
-     * Saves current state and update list order.
+     * Saves current state and updates list order.
      */
-    _onTrackEnd: function() {
-      var movedItem = this.dragModel.item;
-      var toIdx;
+    _onTrackEnd() {
+      if (!this.dragModel) {
+        return;
+      }
+      const movedItem = this.dragModel.item;
+      let toIdx;
       // Move item in array to new position
-      var fromIdx = this.repeater.items.indexOf(movedItem);
+      const fromIdx = this.repeater.items.indexOf(movedItem);
       if (fromIdx >= 0 && this.overModel) {
         toIdx = this.repeater.items.indexOf(this.overModel.item) +
           (this.overModel.index > this.dragModel.index ? this.dirOffset : 0);
-        let item = this.repeater.splice('items', fromIdx, 1)[0];
+        const item = this.repeater.splice('items', fromIdx, 1)[0];
         this.repeater.splice('items', toIdx, 0, item);
       }
       // Reset style of dragged & moved elements
       this.dragElement.style.pointerEvents = '';
       this.dragElement.classList.remove('dragging');
       this._setDragElement(undefined);
-      Polymer.dom(this).children.forEach(el => {
-        this.transform('', el);
-        el.classList.remove('moving');
-      });
+      this._resetChildrenDragging();
       if (toIdx || toIdx === 0) {
-        this.fire('dom-order-changed', {
-          item: movedItem,
-          from: fromIdx,
-          to: toIdx
-        });
+        this.dispatchEvent(new CustomEvent('dom-order-changed', {
+          bubbles: false,
+          composed: true,
+          detail: {
+            item: movedItem,
+            from: fromIdx,
+            to: toIdx
+          }
+        }));
       }
-    },
+    }
+    /**
+     * Resets children to original state after gradding ends.
+     */
+    _resetChildrenDragging() {
+      const children = this.shadowRoot.querySelector('slot').assignedNodes();
+      for (let i = 0, len = children.length; i < len; i++) {
+        const node = children[i];
+        if (!this._isValidTarget(node)) {
+          continue;
+        }
+        node.style.transform = '';
+        node.classList.remove('moving');
+      }
+    }
 
     /**
      * Gets the top level item from the DOM repeater that has been marked as a draggable item.
@@ -270,27 +385,42 @@ to the child elements inside the repeater.
      * @return {HTMLElement} An element that is container for draggable items. Undefined if couldn't
      * find.
      */
-    _getReorderedItem: function(e) {
-      if (e.target.__reorderTracking) {
+    _getReorderedItem(e) {
+      if (e.target.dataset.draggable) {
         return e.target;
       }
-      var path = e.path;
+      const path = e.composedPath();
       if (!path || !path.length) {
         return;
       }
       for (let i = 0, len = path.length; i < len; i++) {
-        if (path[i].__reorderTracking) {
+        const node = path[i];
+        if (node.dataset && node.dataset.draggable) {
           return path[i];
         }
       }
-    },
-
-    _updateDragPosition: function(dy) {
-      this.trackDelta = dy || this.trackDelta || 0;
-      var scrollDelta = this.scrollTop - this.startScrollTop;
-      var pos = this.trackDelta + scrollDelta;
-      this.translate3d(0, pos + 'px', 0, this.dragElement);
     }
-  });
+    /**
+     * Re-positions dragged element to the place where it belongs.
+     * It accounts for scroll position if it changed since dragging started.
+     * @param {Number} dy Delta from starting position.
+     */
+    _updateDragPosition(dy) {
+      this.trackDelta = dy || this.trackDelta || 0;
+      const scrollDelta = this.scrollTop - this.startScrollTop;
+      const pos = this.trackDelta + scrollDelta;
+      this.dragElement.style.transform = `translate3d(0,${pos}px,0)`;
+    }
+
+    /**
+     * Dispatched when items order change.
+     *
+     * @event dom-order-changed
+     * @param {Object} item A model of the item that has been moved
+     * @param {Number} from Original index position of the moved item
+     * @param {Number} to New position of the moved item.
+     */
+  }
+  window.customElements.define(DomReorderer.is, DomReorderer);
   </script>
 </dom-module>

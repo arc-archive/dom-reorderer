@@ -1,0 +1,695 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "description": "A list of arrangable items.\n\nThis element is based on\nhttps://github.com/PolymerElements/iron-elements/issues/8#issuecomment-163696858\n\nIt only works with `dom-repeat` custom element.\nItems in the repeater becomes draggable and it's position can be changed.\nAfter arrangment has changed the `dom-order-changed` custom event is fired to\nnotify listeners about the change.\n\nNote: Arrangable items has to be of a type of HTMLElement (nodeType === 1).\nIt ignores text nodes.\n\n### Example\n\n```html\n<dom-reorderer on-dom-order-changed=\"_positionChanged\">\n   <template is=\"dom-repeat\" items=\"[[items]]\">\n     <div>[[item]]</div>\n   </template>\n</dom-reorderer>\n```\n\n### Styling\n\n`<dom-reorderer>` provides the following custom properties and mixins for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--dom-reorderer` | Mixin applied to the element | `{}`\n`--dom-reorderer-dragging-item` | Mixin applied to the element that is dragged by the user | `{}`\n`--dom-reorderer-moving-item` | Mixin applied to all elements that are being moved while list order change | `{}`\n`--dom-reorderer-box-shaddow-color` | Color of the shaddow of the dragged item | `rgba(50, 50, 50, 0.75)`\n\nYou can also define `.dragging` and `.moving` classes in host application\nto the child elements inside the repeater.\n\n#### Example:\n\n```html\n<style>\n .item {\n   background-color: #fff;\n   padding-right: 12px;\n }\n .item.moving {\n   background-color: yellow;\n }\n .item.dragging {\n   background-color: green;\n }\n</style>\n<dom-reorderer on-dom-order-changed=\"_positionChanged\">\n   <template is=\"dom-repeat\" items=\"[[items]]\">\n     <div class=\"item\">[[item]]</div>\n   </template>\n</dom-reorderer>\n```",
+      "summary": "",
+      "path": "dom-reorderer.html",
+      "properties": [
+        {
+          "name": "startScrollTop",
+          "type": "number | null | undefined",
+          "description": "Dragged element start top position relative to the parent element.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 125,
+              "column": 8
+            },
+            "end": {
+              "line": 128,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true,
+              "attributeType": "Number"
+            }
+          }
+        },
+        {
+          "name": "dragElement",
+          "type": "HTMLElement | null | undefined",
+          "description": "A reference to the element currently being dragged.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 132,
+              "column": 8
+            },
+            "end": {
+              "line": 135,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true,
+              "attributeType": "HTMLElement"
+            }
+          }
+        },
+        {
+          "name": "dragModel",
+          "type": "Object | null | undefined",
+          "description": "Model for dragged element.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 137,
+              "column": 8
+            },
+            "end": {
+              "line": 140,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true,
+              "attributeType": "Object"
+            }
+          }
+        },
+        {
+          "name": "overIndex",
+          "type": "number | null | undefined",
+          "description": "Index of the item being under the dragged item.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 142,
+              "column": 8
+            },
+            "end": {
+              "line": 145,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true,
+              "attributeType": "Number"
+            }
+          }
+        },
+        {
+          "name": "overModel",
+          "type": "Object | null | undefined",
+          "description": "Model of the element being under the dragged item.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 147,
+              "column": 8
+            },
+            "end": {
+              "line": 150,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "readOnly": true,
+              "attributeType": "Object"
+            }
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "_addEventListenerToNode",
+          "description": "Add the event listener to the node if it is a gestures event.",
+          "privacy": "protected",
+          "sourceRange": {
+            "file": "../polymer/lib/mixins/gesture-event-listeners.html",
+            "start": {
+              "line": 55,
+              "column": 6
+            },
+            "end": {
+              "line": 59,
+              "column": 7
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "node",
+              "type": "!Node",
+              "description": "Node to add event listener to"
+            },
+            {
+              "name": "eventName",
+              "type": "string",
+              "description": "Name of event"
+            },
+            {
+              "name": "handler",
+              "type": "function (!Event): void",
+              "description": "Listener function to add"
+            }
+          ],
+          "return": {
+            "type": "void"
+          },
+          "inheritedFrom": "Polymer.GestureEventListeners"
+        },
+        {
+          "name": "_removeEventListenerFromNode",
+          "description": "Remove the event listener to the node if it is a gestures event.",
+          "privacy": "protected",
+          "sourceRange": {
+            "file": "../polymer/lib/mixins/gesture-event-listeners.html",
+            "start": {
+              "line": 69,
+              "column": 6
+            },
+            "end": {
+              "line": 73,
+              "column": 7
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "node",
+              "type": "!Node",
+              "description": "Node to remove event listener from"
+            },
+            {
+              "name": "eventName",
+              "type": "string",
+              "description": "Name of event"
+            },
+            {
+              "name": "handler",
+              "type": "function (!Event): void",
+              "description": "Listener function to remove"
+            }
+          ],
+          "return": {
+            "type": "void"
+          },
+          "inheritedFrom": "Polymer.GestureEventListeners"
+        },
+        {
+          "name": "connectedCallback",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 161,
+              "column": 4
+            },
+            "end": {
+              "line": 166,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "disconnectedCallback",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 168,
+              "column": 4
+            },
+            "end": {
+              "line": 172,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_slotChangeHandler",
+          "description": "A handler for a `slotchange` event to process added or removed nodes.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 177,
+              "column": 4
+            },
+            "end": {
+              "line": 187,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "info",
+              "type": "Object",
+              "description": "Change info record"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_isValidTarget",
+          "description": "Checks id the node is a valid target for dragging support.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 193,
+              "column": 4
+            },
+            "end": {
+              "line": 195,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "node",
+              "type": "Node",
+              "description": "Node to test"
+            }
+          ],
+          "return": {
+            "type": "Boolean"
+          }
+        },
+        {
+          "name": "_isRepeater",
+          "description": "Checks if a node is `dom-repeat` element.\nIt accounts for web components spec 0 and 1 specification.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 203,
+              "column": 4
+            },
+            "end": {
+              "line": 205,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "node",
+              "type": "Node",
+              "description": "Node to test"
+            }
+          ],
+          "return": {
+            "type": "Boolean"
+          }
+        },
+        {
+          "name": "_processAddedNodes",
+          "description": "Handles new nodes added to the light DOM.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 211,
+              "column": 4
+            },
+            "end": {
+              "line": 224,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "nodes",
+              "type": "Array.<Node>",
+              "description": "List of added nodes."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_processRemovedNodes",
+          "description": "Handles removal of nodes from the light DOM.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 230,
+              "column": 4
+            },
+            "end": {
+              "line": 243,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "nodes",
+              "type": "Array.<Node>",
+              "description": "List of removed nodes."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_handleScroll",
+          "description": "Updaters the position of the dragging element when scrolling the element.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 247,
+              "column": 4
+            },
+            "end": {
+              "line": 251,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_handleTrack",
+          "description": "Handles track event dispatched by `Polymer.Gestures` library.\nThis method calls corresponding method to current dragging state.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 257,
+              "column": 4
+            },
+            "end": {
+              "line": 269,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e",
+              "type": "CustomEvent"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_onTrackStart",
+          "description": "A handler for track stat event.\nCaptures the initial state to be used in other handlers.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 277,
+              "column": 4
+            },
+            "end": {
+              "line": 285,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e",
+              "type": "Event",
+              "description": "The track event"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_onTrack",
+          "description": "Updates the position of dragging element and other elements being under\ndragged element.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 292,
+              "column": 4
+            },
+            "end": {
+              "line": 328,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e",
+              "type": "Event",
+              "description": "The track event"
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_onTrackEnd",
+          "description": "Saves current state and updates list order.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 333,
+              "column": 4
+            },
+            "end": {
+              "line": 363,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_resetChildrenDragging",
+          "description": "Resets children to original state after gradding ends.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 367,
+              "column": 4
+            },
+            "end": {
+              "line": 377,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {
+            "type": "void"
+          }
+        },
+        {
+          "name": "_getReorderedItem",
+          "description": "Gets the top level item from the DOM repeater that has been marked as a draggable item.\nThe event can originate from child elements which shouldn't be dragged.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 387,
+              "column": 4
+            },
+            "end": {
+              "line": 401,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "e",
+              "type": "Event",
+              "description": "The track event"
+            }
+          ],
+          "return": {
+            "type": "HTMLElement",
+            "desc": "An element that is container for draggable items. Undefined if couldn't\nfind."
+          }
+        },
+        {
+          "name": "_updateDragPosition",
+          "description": "Re-positions dragged element to the place where it belongs.\nIt accounts for scroll position if it changed since dragging started.",
+          "privacy": "protected",
+          "sourceRange": {
+            "start": {
+              "line": 407,
+              "column": 4
+            },
+            "end": {
+              "line": 412,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "dy",
+              "type": "Number",
+              "description": "Delta from starting position."
+            }
+          ],
+          "return": {
+            "type": "void"
+          }
+        }
+      ],
+      "staticMethods": [],
+      "demos": [
+        {
+          "url": "demo/index.html",
+          "description": ""
+        }
+      ],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 118,
+          "column": 2
+        },
+        "end": {
+          "line": 422,
+          "column": 3
+        }
+      },
+      "privacy": "public",
+      "superclass": "HTMLElement",
+      "name": "UiElements.DomReorderer",
+      "attributes": [
+        {
+          "name": "start-scroll-top",
+          "description": "Dragged element start top position relative to the parent element.",
+          "sourceRange": {
+            "start": {
+              "line": 125,
+              "column": 8
+            },
+            "end": {
+              "line": 128,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "number | null | undefined"
+        },
+        {
+          "name": "drag-element",
+          "description": "A reference to the element currently being dragged.",
+          "sourceRange": {
+            "start": {
+              "line": 132,
+              "column": 8
+            },
+            "end": {
+              "line": 135,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "HTMLElement | null | undefined"
+        },
+        {
+          "name": "drag-model",
+          "description": "Model for dragged element.",
+          "sourceRange": {
+            "start": {
+              "line": 137,
+              "column": 8
+            },
+            "end": {
+              "line": 140,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "Object | null | undefined"
+        },
+        {
+          "name": "over-index",
+          "description": "Index of the item being under the dragged item.",
+          "sourceRange": {
+            "start": {
+              "line": 142,
+              "column": 8
+            },
+            "end": {
+              "line": 145,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "number | null | undefined"
+        },
+        {
+          "name": "over-model",
+          "description": "Model of the element being under the dragged item.",
+          "sourceRange": {
+            "start": {
+              "line": 147,
+              "column": 8
+            },
+            "end": {
+              "line": 150,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "Object | null | undefined"
+        }
+      ],
+      "events": [
+        {
+          "type": "CustomEvent",
+          "name": "dom-order-changed",
+          "description": "Dispatched when items order change.",
+          "metadata": {}
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [
+        {
+          "description": "",
+          "name": "",
+          "range": {
+            "start": {
+              "line": 49,
+              "column": 4
+            },
+            "end": {
+              "line": 49,
+              "column": 30
+            }
+          }
+        }
+      ],
+      "tagname": "dom-reorderer",
+      "mixins": [
+        "Polymer.GestureEventListeners"
+      ]
+    }
+  ]
+}
