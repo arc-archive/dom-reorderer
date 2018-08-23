@@ -10,6 +10,7 @@
   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../../paper-item/paper-icon-item.html">
   <link rel="import" href="../../paper-item/paper-item-body.html">
+  <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
   <link rel="import" href="../dom-reorderer.html">
   <custom-style>
     <style is="custom-style" include="demo-pages-shared-styles">
@@ -45,6 +46,10 @@
       border-radius: 50%;
       background-color: #E91E63;
     }
+
+    paper-checkbox {
+      margin-bottom: 12px;
+    }
     </style>
   </custom-style>
 </head>
@@ -52,6 +57,7 @@
   <div class="vertical-section-container centered">
     <section>
       <h3>The `dom-reorderer`</h3>
+      <paper-checkbox id="disable1">Disable reorder</paper-checkbox>
       <dom-reorderer id="list1">
         <dom-repeat id="demo1">
           <template>
@@ -61,8 +67,10 @@
       </dom-reorderer>
       <output id="output1"></output>
     </section>
+
     <section>
       <h3>Styled list</h3>
+      <paper-checkbox id="disable2">Disable reorder</paper-checkbox>
       <dom-reorderer id="list2">
         <dom-repeat id="demo2">
           <template>
@@ -75,6 +83,7 @@
 
     <section>
       <h3>Complex lists</h3>
+      <paper-checkbox id="disable3">Disable reorder</paper-checkbox>
       <dom-reorderer>
         <dom-repeat items='["one", "two", "three", "four", "five"]'>
           <template>
@@ -108,6 +117,13 @@
     output.innerText = d.item + ' was moved from position ' + d.from + ' to position ' + d.to;
     console.log(d);
   });
+  function toggleDisable(e) {
+    e.target.nextElementSibling.disabled = e.detail.value;
+  }
+  const nodes = document.querySelectorAll('paper-checkbox');
+  for (let i = 0, len = nodes.length; i < len; i++) {
+    nodes[i].addEventListener('checked-changed', toggleDisable);
+  }
   </script>
 </body>
 </html>
