@@ -102,6 +102,11 @@ declare namespace UiElements {
      * Model of the element being under the dragged item.
      */
     readonly overModel: object|null|undefined;
+
+    /**
+     * If set the drag is disabled.
+     */
+    disabled: boolean|null|undefined;
     connectedCallback(): void;
     disconnectedCallback(): void;
 

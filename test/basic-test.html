@@ -22,6 +22,18 @@
       </template>
     </test-fixture>
 
+    <test-fixture id="Disabled">
+      <template>
+        <dom-reorderer disabled>
+          <dom-repeat items='["item1", "item2", "item3"]'>
+            <template>
+              <div>[[item]]</div>
+            </template>
+          </dom-repeat>
+        </dom-reorderer>
+      </template>
+    </test-fixture>
+
     <script>
     /* global sinon */
     suite('basic', function() {
@@ -89,7 +101,41 @@
         MockInteractions.track(listItems[listItems.length - 1], 0, -dy, 10);
       });
     });
-    </script>
 
+    suite('Disabled', function() {
+      let element;
+      let listItems;
+      let itemHeight;
+
+      setup(function(done) {
+        element = fixture('Disabled');
+        flush(() => {
+          listItems = element.shadowRoot.querySelector('slot')
+            .assignedNodes().filter((node) => node.nodeName === 'DIV');
+          const domRect = listItems[0].getBoundingClientRect();
+          itemHeight = domRect.height;
+          done();
+        });
+      });
+
+      test('Do not dispatches "dom-order-changed" event', function() {
+        const spy = sinon.spy();
+        element.addEventListener('dom-order-changed', spy);
+        MockInteractions.track(listItems[0], 0, itemHeight, 10);
+        assert.isFalse(spy.called, 'Event is not called');
+      });
+
+      test('Do not moves elements', function(done) {
+        MockInteractions.track(listItems[1], 0, itemHeight, 10);
+        flush(() => {
+          listItems = element.shadowRoot.querySelector('slot')
+            .assignedNodes().filter((node) => node.nodeName === 'DIV');
+          assert.equal(listItems[1].textContent, 'item2');
+          assert.equal(listItems[2].textContent, 'item3');
+          done();
+        });
+      });
+    });
+    </script>
   </body>
 </html>

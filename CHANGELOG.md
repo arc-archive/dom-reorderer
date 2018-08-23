@@ -1,3 +1,13 @@
+<a name="2.0.1"></a>
+## [2.0.1](https://github.com/advanced-rest-client/dom-reorderer/compare/0.1.2...2.0.1) (2018-08-23)
+
+
+### Fix
+
+* Fixing sauce labs config file ([b101d4d11a88735f043199e69860b8ff710ddb68](https://github.com/advanced-rest-client/dom-reorderer/commit/b101d4d11a88735f043199e69860b8ff710ddb68))
+
+
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/advanced-rest-client/dom-reorderer/compare/0.1.2...2.0.0) (2018-06-22)
 
