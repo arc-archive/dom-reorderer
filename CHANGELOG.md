@@ -36,3 +36,12 @@
 
 
 
+## [2.0.1](https://github.com/advanced-rest-client/dom-reorderer/compare/0.1.2...2.0.1) (2019-02-14)
+
+
+### Fix
+
+* Fixing sauce labs config file ([b101d4d11a88735f043199e69860b8ff710ddb68](https://github.com/advanced-rest-client/dom-reorderer/commit/b101d4d11a88735f043199e69860b8ff710ddb68))
+
+
+
